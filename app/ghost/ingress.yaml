@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ghost
+  namespace: ghost
+  annotations:
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - questverse.blog
+        - www.questverse.blog
+      secretName: questverse-com-tls
+  rules:
+    - host: questverse.blog
+      http:
+        paths:
+          - backend:
+              service:
+                name: ghost
+                port:
+                  name: http
+            path: /
+            pathType: Prefix

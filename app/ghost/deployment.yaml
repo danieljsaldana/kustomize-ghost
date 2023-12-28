@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ghost
+  name: ghost
+  labels:
+    app: ghost
+spec:
+  selector:
+    matchLabels:
+      app: ghost  
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ghost
+    spec:
+      containers:
+      - name: ghost
+        image: ghost:alpine
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 250m
+            memory: 180Mi
+          limits:
+            cpu: 350m
+            memory: 300Mi 
+        ports:
+        - containerPort: 2368
+          name: ghost 
+        readinessProbe:
+          tcpSocket:
+            port: ghost
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: ghost
+          initialDelaySeconds: 30
+          periodSeconds: 30                              
+        env:
+          - name: database__connection__database
+            valueFrom:
+              secretKeyRef:
+                name: mysql-secrets
+                key: db-name
+                optional: false
+          - name: database__connection__user
+            valueFrom:
+              secretKeyRef:
+                name: mysql-secrets
+                key: db-user
+                optional: false
+          - name: database__connection__password
+            valueFrom:
+              secretKeyRef:
+                name: mysql-secrets
+                key: db-pass
+                optional: false
+          - name: mail__options__auth__user
+            valueFrom:
+              secretKeyRef:
+                name: ghost-secrets
+                key: mailgun_username
+                optional: false
+          - name: mail__options__auth__pass
+            valueFrom:
+              secretKeyRef:
+                name: ghost-secrets
+                key: mailgun_password
+                optional: false                               
+        envFrom:
+        - configMapRef:
+            name: ghost-configmap        
+        volumeMounts:
+          - name: ghost-persistent-storage
+            mountPath: /var/lib/ghost/content
+      volumes:
+        - name: ghost-persistent-storage
+          persistentVolumeClaim:
+            claimName: ghost

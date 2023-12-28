@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ghost-configmap
+  namespace: ghost
+data:
+  url: "https://questverse.blog"
+  database__connection__host: "mysql"
+  database__client: "mysql"
+  mail__transport: "SMTP"
+  mail__options__service: "Mailgun"
+  mail__options__host: "smtp.eu.mailgun.org"
+  mail__options__port: "465"
+  mail__options__secure: "true"
